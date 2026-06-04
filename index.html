@@ -19,6 +19,8 @@
       --purple: #8f73d6;
       --danger: #8f4b4b;
       --shadow: rgba(0, 0, 0, 0.4);
+      --success-glow: rgba(199, 154, 82, 0.45);
+      --fail-glow: rgba(180, 70, 70, 0.45);
     }
 
     * {
@@ -79,6 +81,17 @@
       border-radius: 18px;
       padding: 1.1rem;
       text-align: center;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .result-card.nat20 {
+      border-color: var(--gold);
+      box-shadow: 0 0 0 1px rgba(199,154,82,0.25), 0 0 22px var(--success-glow);
+    }
+
+    .result-card.nat1 {
+      border-color: #b05757;
+      box-shadow: 0 0 0 1px rgba(176,87,87,0.2), 0 0 22px var(--fail-glow);
     }
 
     .die {
@@ -106,7 +119,35 @@
       font-weight: bold;
       color: #fff7ea;
       text-shadow: 0 0 12px rgba(199,154,82,0.15);
+      margin-bottom: 0.5rem;
+      transition: color 0.2s ease, text-shadow 0.2s ease;
+    }
+
+    .result.nat20 {
+      color: #ffd78f;
+      text-shadow: 0 0 18px rgba(199,154,82,0.5);
+    }
+
+    .result.nat1 {
+      color: #ff9c9c;
+      text-shadow: 0 0 18px rgba(180,70,70,0.45);
+    }
+
+    .special-note {
+      min-height: 1.2em;
       margin-bottom: 0.7rem;
+      font-size: 0.95rem;
+      font-weight: bold;
+      letter-spacing: 0.03em;
+      color: var(--muted);
+    }
+
+    .special-note.nat20 {
+      color: #ffd78f;
+    }
+
+    .special-note.nat1 {
+      color: #ff9c9c;
     }
 
     .breakdown {
@@ -220,6 +261,52 @@
       font-size: 0.95rem;
     }
 
+    .history-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 0.3rem;
+      flex-wrap: wrap;
+    }
+
+    .history-formula {
+      color: var(--gold);
+      font-weight: bold;
+    }
+
+    .history-total {
+      font-weight: bold;
+      color: #fff7ea;
+    }
+
+    .history-breakdown {
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .history-tag {
+      display: inline-block;
+      margin-top: 0.45rem;
+      padding: 0.2rem 0.5rem;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      font-weight: bold;
+      letter-spacing: 0.03em;
+    }
+
+    .history-tag.nat20 {
+      background: rgba(199,154,82,0.18);
+      color: #ffd78f;
+      border: 1px solid rgba(199,154,82,0.35);
+    }
+
+    .history-tag.nat1 {
+      background: rgba(176,87,87,0.18);
+      color: #ffaaaa;
+      border: 1px solid rgba(176,87,87,0.35);
+    }
+
     @media (max-width: 520px) {
       .main {
         padding: 1rem;
@@ -240,6 +327,11 @@
       button {
         width: 100%;
       }
+
+      .history-top {
+        flex-direction: column;
+        align-items: flex-start;
+      }
     }
   </style>
 </head>
@@ -251,11 +343,12 @@
     </div>
 
     <div class="main">
-      <div class="result-card">
+      <div class="result-card" id="resultCard">
         <div class="die" id="dieLabel">Loading...</div>
         <div class="formula" id="formulaLabel">-</div>
         <div class="mode" id="modeLabel"></div>
         <div class="result" id="result">-</div>
+        <div class="special-note" id="specialNote"></div>
         <div class="breakdown" id="breakdown">-</div>
       </div>
 
@@ -302,6 +395,8 @@
     const modeLabel = document.getElementById("modeLabel");
     const resultEl = document.getElementById("result");
     const breakdownEl = document.getElementById("breakdown");
+    const resultCard = document.getElementById("resultCard");
+    const specialNote = document.getElementById("specialNote");
 
     const rerollBtn = document.getElementById("rerollBtn");
     const addDieBtn = document.getElementById("addDieBtn");
@@ -334,6 +429,31 @@
       disBtn.classList.toggle("hidden", !isD20);
     }
 
+    function clearSpecialStyles() {
+      resultCard.classList.remove("nat20", "nat1");
+      resultEl.classList.remove("nat20", "nat1");
+      specialNote.classList.remove("nat20", "nat1");
+      specialNote.textContent = "";
+    }
+
+    function applySpecialResult(type) {
+      clearSpecialStyles();
+
+      if (type === "nat20") {
+        resultCard.classList.add("nat20");
+        resultEl.classList.add("nat20");
+        specialNote.classList.add("nat20");
+        specialNote.textContent = "Natural 20 — Critical Success";
+      }
+
+      if (type === "nat1") {
+        resultCard.classList.add("nat1");
+        resultEl.classList.add("nat1");
+        specialNote.classList.add("nat1");
+        specialNote.textContent = "Natural 1 — Critical Failure";
+      }
+    }
+
     function renderHistory() {
       historyList.innerHTML = "";
 
@@ -348,7 +468,35 @@
       history.forEach(item => {
         const li = document.createElement("li");
         li.className = "history-item";
-        li.textContent = `${item.formula} → ${item.total} (${item.breakdown})`;
+
+        const top = document.createElement("div");
+        top.className = "history-top";
+
+        const formula = document.createElement("span");
+        formula.className = "history-formula";
+        formula.textContent = item.formula;
+
+        const total = document.createElement("span");
+        total.className = "history-total";
+        total.textContent = `Total: ${item.total}`;
+
+        top.appendChild(formula);
+        top.appendChild(total);
+
+        const breakdown = document.createElement("div");
+        breakdown.className = "history-breakdown";
+        breakdown.textContent = item.breakdown;
+
+        li.appendChild(top);
+        li.appendChild(breakdown);
+
+        if (item.special) {
+          const tag = document.createElement("div");
+          tag.className = `history-tag ${item.special}`;
+          tag.textContent = item.special === "nat20" ? "NAT 20" : "NAT 1";
+          li.appendChild(tag);
+        }
+
         historyList.appendChild(li);
       });
     }
@@ -392,8 +540,13 @@
       const sides = allowedDice[currentDie];
       const rolls = rollMultipleDice(sides, diceCount);
       const total = rolls.reduce((sum, value) => sum + value, 0);
-
       const formulaText = `${diceCount}${currentDie}`;
+
+      let special = null;
+      if (currentDie === "d20" && diceCount === 1) {
+        if (rolls[0] === 20) special = "nat20";
+        if (rolls[0] === 1) special = "nat1";
+      }
 
       dieLabel.textContent = `Active die: ${currentDie}`;
       formulaLabel.textContent = `Formula: ${formulaText}`;
@@ -402,12 +555,14 @@
       breakdownEl.textContent = `Breakdown: ${rolls.join(" + ")}`;
 
       updateD20Buttons();
+      applySpecialResult(special);
       flashResult();
 
       addToHistory({
         formula: `${formulaText} (Normal)`,
         total,
-        breakdown: rolls.join(" + ")
+        breakdown: `Breakdown: ${rolls.join(" + ")}`,
+        special
       });
     }
 
@@ -418,6 +573,10 @@
       const second = rollDie(20);
       const result = Math.max(first, second);
 
+      let special = null;
+      if (result === 20) special = "nat20";
+      if (result === 1) special = "nat1";
+
       dieLabel.textContent = `Active die: ${currentDie}`;
       formulaLabel.textContent = "Formula: 1d20";
       modeLabel.textContent = "Mode: Advantage";
@@ -425,12 +584,14 @@
       breakdownEl.textContent = `Breakdown: ${first}, ${second}`;
 
       updateD20Buttons();
+      applySpecialResult(special);
       flashResult();
 
       addToHistory({
         formula: "1d20 adv",
         total: result,
-        breakdown: `${first}, ${second}`
+        breakdown: `Breakdown: ${first}, ${second}`,
+        special
       });
     }
 
@@ -441,6 +602,10 @@
       const second = rollDie(20);
       const result = Math.min(first, second);
 
+      let special = null;
+      if (result === 20) special = "nat20";
+      if (result === 1) special = "nat1";
+
       dieLabel.textContent = `Active die: ${currentDie}`;
       formulaLabel.textContent = "Formula: 1d20";
       modeLabel.textContent = "Mode: Disadvantage";
@@ -448,12 +613,14 @@
       breakdownEl.textContent = `Breakdown: ${first}, ${second}`;
 
       updateD20Buttons();
+      applySpecialResult(special);
       flashResult();
 
       addToHistory({
         formula: "1d20 dis",
         total: result,
-        breakdown: `${first}, ${second}`
+        breakdown: `Breakdown: ${first}, ${second}`,
+        special
       });
     }
 
