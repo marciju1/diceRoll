@@ -21,7 +21,7 @@
       padding: 2rem;
       border-radius: 16px;
       text-align: center;
-      width: min(90vw, 420px);
+      width: min(92vw, 460px);
       box-shadow: 0 10px 30px rgba(0,0,0,0.35);
     }
 
@@ -31,15 +31,35 @@
     }
 
     .die {
-      font-size: 1.2rem;
-      margin-bottom: 1rem;
+      font-size: 1.1rem;
+      margin-bottom: 0.5rem;
       color: #cfcfcf;
+    }
+
+    .formula {
+      font-size: 1rem;
+      margin-bottom: 1rem;
+      color: #b0b0b0;
     }
 
     .result {
       font-size: 4rem;
       font-weight: bold;
-      margin: 1rem 0 1.5rem;
+      margin: 0.5rem 0;
+    }
+
+    .breakdown {
+      font-size: 1rem;
+      color: #d8d8d8;
+      min-height: 1.5em;
+      margin-bottom: 1.5rem;
+    }
+
+    .buttons {
+      display: flex;
+      gap: 0.75rem;
+      justify-content: center;
+      flex-wrap: wrap;
     }
 
     button {
@@ -55,14 +75,29 @@
     button:hover {
       background: #3a76db;
     }
+
+    .secondary {
+      background: #555;
+    }
+
+    .secondary:hover {
+      background: #666;
+    }
   </style>
 </head>
 <body>
   <div class="card">
     <h1>NFC Dice Roller</h1>
     <div class="die" id="dieLabel">Loading...</div>
+    <div class="formula" id="formulaLabel">-</div>
     <div class="result" id="result">-</div>
-    <button id="rerollBtn">Reroll</button>
+    <div class="breakdown" id="breakdown">-</div>
+
+    <div class="buttons">
+      <button id="rerollBtn">Reroll</button>
+      <button id="addDieBtn">+1 Die</button>
+      <button id="resetBtn" class="secondary">Reset</button>
+    </div>
   </div>
 
   <script>
@@ -80,23 +115,53 @@
     const dieParam = params.get("die");
 
     const dieLabel = document.getElementById("dieLabel");
+    const formulaLabel = document.getElementById("formulaLabel");
     const resultEl = document.getElementById("result");
+    const breakdownEl = document.getElementById("breakdown");
+
     const rerollBtn = document.getElementById("rerollBtn");
+    const addDieBtn = document.getElementById("addDieBtn");
+    const resetBtn = document.getElementById("resetBtn");
 
     let currentDie = allowedDice[dieParam] ? dieParam : "d20";
+    let diceCount = 1;
 
     function rollDie(sides) {
       return Math.floor(Math.random() * sides) + 1;
     }
 
+    function rollMultipleDice(sides, count) {
+      const rolls = [];
+
+      for (let i = 0; i < count; i++) {
+        rolls.push(rollDie(sides));
+      }
+
+      return rolls;
+    }
+
     function doRoll() {
       const sides = allowedDice[currentDie];
-      const result = rollDie(sides);
+      const rolls = rollMultipleDice(sides, diceCount);
+      const total = rolls.reduce((sum, value) => sum + value, 0);
+
       dieLabel.textContent = `Active die: ${currentDie}`;
-      resultEl.textContent = result;
+      formulaLabel.textContent = `Formula: ${diceCount}${currentDie}`;
+      resultEl.textContent = total;
+      breakdownEl.textContent = `Breakdown: ${rolls.join(" + ")}`;
     }
 
     rerollBtn.addEventListener("click", doRoll);
+
+    addDieBtn.addEventListener("click", () => {
+      diceCount += 1;
+      doRoll();
+    });
+
+    resetBtn.addEventListener("click", () => {
+      diceCount = 1;
+      doRoll();
+    });
 
     doRoll();
   </script>
