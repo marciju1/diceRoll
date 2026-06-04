@@ -1,17 +1,17 @@
 # diceRoll
 
-https://marciju1.github.io/diceRoll/
+Base:  https://marciju1.github.io/diceRoll/
 
-https://marciju1.github.io/diceRoll/?die=d4
+d4:    https://marciju1.github.io/diceRoll/?die=d4
 
-https://marciju1.github.io/diceRoll/?die=d6
+d6:    https://marciju1.github.io/diceRoll/?die=d6
 
-https://marciju1.github.io/diceRoll/?die=d8
+d8:    https://marciju1.github.io/diceRoll/?die=d8
 
-https://marciju1.github.io/diceRoll/?die=d10
+d10:   https://marciju1.github.io/diceRoll/?die=d10
 
-https://marciju1.github.io/diceRoll/?die=d12
+d12:   https://marciju1.github.io/diceRoll/?die=d12
 
-https://marciju1.github.io/diceRoll/?die=d20
+d20:  https://marciju1.github.io/diceRoll/?die=d20
 
-https://marciju1.github.io/diceRoll/?die=d100
+d100:  https://marciju1.github.io/diceRoll/?die=d100
