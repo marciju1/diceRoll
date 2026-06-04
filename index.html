@@ -21,7 +21,7 @@
       padding: 2rem;
       border-radius: 16px;
       text-align: center;
-      width: min(92vw, 460px);
+      width: min(92vw, 480px);
       box-shadow: 0 10px 30px rgba(0,0,0,0.35);
     }
 
@@ -38,8 +38,15 @@
 
     .formula {
       font-size: 1rem;
-      margin-bottom: 1rem;
+      margin-bottom: 0.4rem;
       color: #b0b0b0;
+    }
+
+    .mode {
+      font-size: 0.95rem;
+      margin-bottom: 1rem;
+      color: #9fd0ff;
+      min-height: 1.2em;
     }
 
     .result {
@@ -83,6 +90,18 @@
     .secondary:hover {
       background: #666;
     }
+
+    .special {
+      background: #7a4cf5;
+    }
+
+    .special:hover {
+      background: #6538d9;
+    }
+
+    .hidden {
+      display: none;
+    }
   </style>
 </head>
 <body>
@@ -90,6 +109,7 @@
     <h1>NFC Dice Roller</h1>
     <div class="die" id="dieLabel">Loading...</div>
     <div class="formula" id="formulaLabel">-</div>
+    <div class="mode" id="modeLabel"></div>
     <div class="result" id="result">-</div>
     <div class="breakdown" id="breakdown">-</div>
 
@@ -97,6 +117,8 @@
       <button id="rerollBtn">Reroll</button>
       <button id="addDieBtn">+1 Die</button>
       <button id="resetBtn" class="secondary">Reset</button>
+      <button id="advBtn" class="special hidden">Advantage</button>
+      <button id="disBtn" class="special hidden">Disadvantage</button>
     </div>
   </div>
 
@@ -116,12 +138,15 @@
 
     const dieLabel = document.getElementById("dieLabel");
     const formulaLabel = document.getElementById("formulaLabel");
+    const modeLabel = document.getElementById("modeLabel");
     const resultEl = document.getElementById("result");
     const breakdownEl = document.getElementById("breakdown");
 
     const rerollBtn = document.getElementById("rerollBtn");
     const addDieBtn = document.getElementById("addDieBtn");
     const resetBtn = document.getElementById("resetBtn");
+    const advBtn = document.getElementById("advBtn");
+    const disBtn = document.getElementById("disBtn");
 
     let currentDie = allowedDice[dieParam] ? dieParam : "d20";
     let diceCount = 1;
@@ -140,6 +165,12 @@
       return rolls;
     }
 
+    function updateD20Buttons() {
+      const isD20 = currentDie === "d20";
+      advBtn.classList.toggle("hidden", !isD20);
+      disBtn.classList.toggle("hidden", !isD20);
+    }
+
     function doRoll() {
       const sides = allowedDice[currentDie];
       const rolls = rollMultipleDice(sides, diceCount);
@@ -147,8 +178,43 @@
 
       dieLabel.textContent = `Active die: ${currentDie}`;
       formulaLabel.textContent = `Formula: ${diceCount}${currentDie}`;
+      modeLabel.textContent = "Mode: Normal";
       resultEl.textContent = total;
       breakdownEl.textContent = `Breakdown: ${rolls.join(" + ")}`;
+
+      updateD20Buttons();
+    }
+
+    function doAdvantageRoll() {
+      if (currentDie !== "d20") return;
+
+      const first = rollDie(20);
+      const second = rollDie(20);
+      const result = Math.max(first, second);
+
+      dieLabel.textContent = `Active die: ${currentDie}`;
+      formulaLabel.textContent = "Formula: 1d20";
+      modeLabel.textContent = "Mode: Advantage";
+      resultEl.textContent = result;
+      breakdownEl.textContent = `Breakdown: ${first}, ${second}`;
+
+      updateD20Buttons();
+    }
+
+    function doDisadvantageRoll() {
+      if (currentDie !== "d20") return;
+
+      const first = rollDie(20);
+      const second = rollDie(20);
+      const result = Math.min(first, second);
+
+      dieLabel.textContent = `Active die: ${currentDie}`;
+      formulaLabel.textContent = "Formula: 1d20";
+      modeLabel.textContent = "Mode: Disadvantage";
+      resultEl.textContent = result;
+      breakdownEl.textContent = `Breakdown: ${first}, ${second}`;
+
+      updateD20Buttons();
     }
 
     rerollBtn.addEventListener("click", doRoll);
@@ -162,6 +228,9 @@
       diceCount = 1;
       doRoll();
     });
+
+    advBtn.addEventListener("click", doAdvantageRoll);
+    disBtn.addEventListener("click", doDisadvantageRoll);
 
     doRoll();
   </script>
