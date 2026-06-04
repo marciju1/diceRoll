@@ -5,99 +5,182 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>NFC Dice Roller</title>
   <style>
+    :root {
+      --bg: #14110f;
+      --bg-2: #1d1814;
+      --panel: #241d18;
+      --panel-2: #2d241e;
+      --line: #4b3a2f;
+      --text: #f3e9dc;
+      --muted: #c9b79f;
+      --gold: #c79a52;
+      --gold-dark: #9a7237;
+      --blue: #6ea8d9;
+      --purple: #8f73d6;
+      --danger: #8f4b4b;
+      --shadow: rgba(0, 0, 0, 0.4);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
     body {
-      font-family: Arial, sans-serif;
-      background: #1f1f1f;
-      color: #f5f5f5;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
       margin: 0;
+      min-height: 100vh;
+      font-family: Georgia, "Times New Roman", serif;
+      background:
+        radial-gradient(circle at top, #2e241d 0%, var(--bg) 45%, #0f0c0a 100%);
+      color: var(--text);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 1rem;
     }
 
-    .card {
-      background: #2c2c2c;
-      padding: 2rem;
-      border-radius: 16px;
+    .app {
+      width: min(100%, 560px);
+      background: linear-gradient(180deg, var(--panel) 0%, var(--bg-2) 100%);
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      box-shadow: 0 18px 50px var(--shadow);
+      overflow: hidden;
+    }
+
+    .header {
+      padding: 1.4rem 1.4rem 1rem;
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(199,154,82,0.08), rgba(0,0,0,0));
       text-align: center;
-      width: min(92vw, 520px);
-      box-shadow: 0 10px 30px rgba(0,0,0,0.35);
     }
 
-    h1 {
-      margin-top: 0;
-      font-size: 1.4rem;
+    .title {
+      margin: 0;
+      font-size: 1.6rem;
+      letter-spacing: 0.04em;
+      color: var(--text);
+    }
+
+    .subtitle {
+      margin-top: 0.35rem;
+      font-size: 0.95rem;
+      color: var(--muted);
+    }
+
+    .main {
+      padding: 1.2rem;
+      display: grid;
+      gap: 1rem;
+    }
+
+    .result-card {
+      background: linear-gradient(180deg, var(--panel-2), var(--panel));
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 1.1rem;
+      text-align: center;
     }
 
     .die {
-      font-size: 1.1rem;
-      margin-bottom: 0.5rem;
-      color: #cfcfcf;
+      font-size: 1rem;
+      color: var(--muted);
+      margin-bottom: 0.35rem;
     }
 
     .formula {
       font-size: 1rem;
-      margin-bottom: 0.4rem;
-      color: #b0b0b0;
+      color: var(--gold);
+      margin-bottom: 0.35rem;
     }
 
     .mode {
-      font-size: 0.95rem;
-      margin-bottom: 1rem;
-      color: #9fd0ff;
       min-height: 1.2em;
+      font-size: 0.95rem;
+      color: var(--blue);
+      margin-bottom: 0.8rem;
     }
 
     .result {
-      font-size: 4rem;
+      font-size: clamp(3rem, 8vw, 4.8rem);
+      line-height: 1;
       font-weight: bold;
-      margin: 0.5rem 0;
+      color: #fff7ea;
+      text-shadow: 0 0 12px rgba(199,154,82,0.15);
+      margin-bottom: 0.7rem;
     }
 
     .breakdown {
       font-size: 1rem;
-      color: #d8d8d8;
-      min-height: 1.5em;
-      margin-bottom: 1.5rem;
+      color: var(--text);
+      background: rgba(0,0,0,0.18);
+      border: 1px solid rgba(255,255,255,0.05);
+      border-radius: 12px;
+      padding: 0.8rem;
+      min-height: 3.2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
     }
 
-    .buttons {
-      display: flex;
+    .controls {
+      display: grid;
+      gap: 0.8rem;
+    }
+
+    .button-row {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
       gap: 0.75rem;
-      justify-content: center;
-      flex-wrap: wrap;
-      margin-bottom: 1.5rem;
     }
 
     button {
+      min-height: 48px;
+      padding: 0.9rem 1rem;
+      border: 1px solid transparent;
+      border-radius: 14px;
       font-size: 1rem;
-      padding: 0.8rem 1.2rem;
-      border: none;
-      border-radius: 10px;
-      background: #4c8bf5;
+      font-weight: 600;
       color: white;
       cursor: pointer;
+      transition: transform 0.08s ease, opacity 0.2s ease, background 0.2s ease;
     }
 
-    button:hover {
-      background: #3a76db;
+    button:active {
+      transform: translateY(1px) scale(0.99);
+    }
+
+    .primary {
+      background: linear-gradient(180deg, var(--gold), var(--gold-dark));
+      color: #1c140d;
+    }
+
+    .primary:hover {
+      opacity: 0.95;
     }
 
     .secondary {
-      background: #555;
+      background: #5d4a3b;
     }
 
     .secondary:hover {
-      background: #666;
+      background: #6a5544;
     }
 
     .special {
-      background: #7a4cf5;
+      background: linear-gradient(180deg, #8b78d8, #6e59be);
     }
 
     .special:hover {
-      background: #6538d9;
+      opacity: 0.95;
+    }
+
+    .danger {
+      background: #6e4040;
+    }
+
+    .danger:hover {
+      background: #815050;
     }
 
     .hidden {
@@ -105,55 +188,98 @@
     }
 
     .history {
-      text-align: left;
-      font-size: 0.9rem;
-      color: #c8c8c8;
-      border-top: 1px solid #444;
-      padding-top: 1rem;
-      margin-top: 0.5rem;
-      max-height: 9rem;
-      overflow-y: auto;
+      background: linear-gradient(180deg, var(--panel-2), var(--panel));
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 1rem;
     }
 
     .history-title {
+      font-size: 1rem;
       font-weight: bold;
-      margin-bottom: 0.4rem;
-      font-size: 0.95rem;
+      color: var(--gold);
+      margin-bottom: 0.8rem;
+      letter-spacing: 0.03em;
     }
 
     .history-list {
       list-style: none;
       padding: 0;
       margin: 0;
+      display: grid;
+      gap: 0.55rem;
     }
 
     .history-item {
-      margin-bottom: 0.3rem;
-      line-height: 1.3;
+      background: rgba(0,0,0,0.18);
+      border: 1px solid rgba(255,255,255,0.05);
+      border-radius: 12px;
+      padding: 0.75rem 0.8rem;
+      line-height: 1.35;
+      color: var(--text);
+      font-size: 0.95rem;
+    }
+
+    @media (max-width: 520px) {
+      .main {
+        padding: 1rem;
+      }
+
+      .header {
+        padding: 1.2rem 1rem 0.9rem;
+      }
+
+      .title {
+        font-size: 1.4rem;
+      }
+
+      .button-row {
+        grid-template-columns: 1fr;
+      }
+
+      button {
+        width: 100%;
+      }
     }
   </style>
 </head>
 <body>
-  <div class="card">
-    <h1>NFC Dice Roller</h1>
-    <div class="die" id="dieLabel">Loading...</div>
-    <div class="formula" id="formulaLabel">-</div>
-    <div class="mode" id="modeLabel"></div>
-    <div class="result" id="result">-</div>
-    <div class="breakdown" id="breakdown">-</div>
-
-    <div class="buttons">
-      <button id="rerollBtn">Reroll</button>
-      <button id="addDieBtn">+1 Die</button>
-      <button id="resetBtn" class="secondary">Reset</button>
-      <button id="advBtn" class="special hidden">Advantage</button>
-      <button id="disBtn" class="special hidden">Disadvantage</button>
-      <button id="clearHistoryBtn" class="secondary">Clear History</button>
+  <div class="app">
+    <div class="header">
+      <h1 class="title">NFC Dice Roller</h1>
+      <div class="subtitle">Tap a die token, then roll your fate.</div>
     </div>
 
-    <div class="history" id="history">
-      <div class="history-title">Last rolls</div>
-      <ul class="history-list" id="historyList"></ul>
+    <div class="main">
+      <div class="result-card">
+        <div class="die" id="dieLabel">Loading...</div>
+        <div class="formula" id="formulaLabel">-</div>
+        <div class="mode" id="modeLabel"></div>
+        <div class="result" id="result">-</div>
+        <div class="breakdown" id="breakdown">-</div>
+      </div>
+
+      <div class="controls">
+        <div class="button-row">
+          <button id="rerollBtn" class="primary">Reroll</button>
+          <button id="addDieBtn" class="secondary">+1 Die</button>
+        </div>
+
+        <div class="button-row">
+          <button id="resetBtn" class="secondary">Reset</button>
+          <button id="clearHistoryBtn" class="danger">Clear History</button>
+        </div>
+
+        <div class="button-row" id="d20Row">
+          <button id="advBtn" class="special hidden">Advantage</button>
+          <button id="disBtn" class="special hidden">Disadvantage</button>
+        </div>
+      </div>
+
+      <div class="history">
+        <div class="history-title">Last Rolls</div>
+        <ul class="history-list" id="historyList"></ul>
+      </div>
     </div>
   </div>
 
@@ -248,6 +374,20 @@
       renderHistory();
     }
 
+    function flashResult() {
+      resultEl.animate(
+        [
+          { transform: "scale(0.92)", opacity: 0.6 },
+          { transform: "scale(1.05)", opacity: 1 },
+          { transform: "scale(1)", opacity: 1 }
+        ],
+        {
+          duration: 220,
+          easing: "ease-out"
+        }
+      );
+    }
+
     function doRoll() {
       const sides = allowedDice[currentDie];
       const rolls = rollMultipleDice(sides, diceCount);
@@ -262,6 +402,7 @@
       breakdownEl.textContent = `Breakdown: ${rolls.join(" + ")}`;
 
       updateD20Buttons();
+      flashResult();
 
       addToHistory({
         formula: `${formulaText} (Normal)`,
@@ -284,6 +425,7 @@
       breakdownEl.textContent = `Breakdown: ${first}, ${second}`;
 
       updateD20Buttons();
+      flashResult();
 
       addToHistory({
         formula: "1d20 adv",
@@ -306,6 +448,7 @@
       breakdownEl.textContent = `Breakdown: ${first}, ${second}`;
 
       updateD20Buttons();
+      flashResult();
 
       addToHistory({
         formula: "1d20 dis",
