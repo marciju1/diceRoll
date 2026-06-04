@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NFC Dice Roller</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #1f1f1f;
+      color: #f5f5f5;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+    }
+
+    .card {
+      background: #2c2c2c;
+      padding: 2rem;
+      border-radius: 16px;
+      text-align: center;
+      width: min(90vw, 420px);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+    }
+
+    h1 {
+      margin-top: 0;
+      font-size: 1.4rem;
+    }
+
+    .die {
+      font-size: 1.2rem;
+      margin-bottom: 1rem;
+      color: #cfcfcf;
+    }
+
+    .result {
+      font-size: 4rem;
+      font-weight: bold;
+      margin: 1rem 0 1.5rem;
+    }
+
+    button {
+      font-size: 1rem;
+      padding: 0.8rem 1.2rem;
+      border: none;
+      border-radius: 10px;
+      background: #4c8bf5;
+      color: white;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #3a76db;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>NFC Dice Roller</h1>
+    <div class="die" id="dieLabel">Loading...</div>
+    <div class="result" id="result">-</div>
+    <button id="rerollBtn">Reroll</button>
+  </div>
+
+  <script>
+    const allowedDice = {
+      d4: 4,
+      d6: 6,
+      d8: 8,
+      d10: 10,
+      d12: 12,
+      d20: 20,
+      d100: 100
+    };
+
+    const params = new URLSearchParams(window.location.search);
+    const dieParam = params.get("die");
+
+    const dieLabel = document.getElementById("dieLabel");
+    const resultEl = document.getElementById("result");
+    const rerollBtn = document.getElementById("rerollBtn");
+
+    let currentDie = allowedDice[dieParam] ? dieParam : "d20";
+
+    function rollDie(sides) {
+      return Math.floor(Math.random() * sides) + 1;
+    }
+
+    function doRoll() {
+      const sides = allowedDice[currentDie];
+      const result = rollDie(sides);
+      dieLabel.textContent = `Active die: ${currentDie}`;
+      resultEl.textContent = result;
+    }
+
+    rerollBtn.addEventListener("click", doRoll);
+
+    doRoll();
+  </script>
+</body>
+</html>
