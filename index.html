@@ -156,157 +156,166 @@
     </div>
   </div>
 
-  <script>
-    const allowedDice = {
-      d4: 4,
-      d6: 6,
-      d8: 8,
-      d10: 10,
-      d12: 12,
-      d20: 20,
-      d100: 100
-    };
+<script>
+  const allowedDice = {
+    d4: 4,
+    d6: 6,
+    d8: 8,
+    d10: 10,
+    d12: 12,
+    d20: 20,
+    d100: 100
+  };
 
-    const params = new URLSearchParams(window.location.search);
-    const dieParam = params.get("die");
+  const params = new URLSearchParams(window.location.search);
+  const dieParam = params.get("die");
 
-    const dieLabel = document.getElementById("dieLabel");
-    const formulaLabel = document.getElementById("formulaLabel");
-    const modeLabel = document.getElementById("modeLabel");
-    const resultEl = document.getElementById("result");
-    const breakdownEl = document.getElementById("breakdown");
+  const dieLabel = document.getElementById("dieLabel");
+  const formulaLabel = document.getElementById("formulaLabel");
+  const modeLabel = document.getElementById("modeLabel");
+  const resultEl = document.getElementById("result");
+  const breakdownEl = document.getElementById("breakdown");
 
-    const rerollBtn = document.getElementById("rerollBtn");
-    const addDieBtn = document.getElementById("addDieBtn");
-    const resetBtn = document.getElementById("resetBtn");
-    const advBtn = document.getElementById("advBtn");
-    const disBtn = document.getElementById("disBtn");
+  const rerollBtn = document.getElementById("rerollBtn");
+  const addDieBtn = document.getElementById("addDieBtn");
+  const resetBtn = document.getElementById("resetBtn");
+  const advBtn = document.getElementById("advBtn");
+  const disBtn = document.getElementById("disBtn");
 
-    const historyList = document.getElementById("historyList");
+  const historyList = document.getElementById("historyList");
 
-    let currentDie = allowedDice[dieParam] ? dieParam : "d20";
-    let diceCount = 1;
-    let history = [];
+  let currentDie = allowedDice[dieParam] ? dieParam : "d20";
+  let diceCount = 1;
+  let history = JSON.parse(localStorage.getItem("diceRollHistory")) || [];
 
-    function rollDie(sides) {
-      return Math.floor(Math.random() * sides) + 1;
+  function rollDie(sides) {
+    return Math.floor(Math.random() * sides) + 1;
+  }
+
+  function rollMultipleDice(sides, count) {
+    const rolls = [];
+    for (let i = 0; i < count; i++) {
+      rolls.push(rollDie(sides));
     }
+    return rolls;
+  }
 
-    function rollMultipleDice(sides, count) {
-      const rolls = [];
-      for (let i = 0; i < count; i++) {
-        rolls.push(rollDie(sides));
-      }
-      return rolls;
-    }
+  function updateD20Buttons() {
+    const isD20 = currentDie === "d20";
+    advBtn.classList.toggle("hidden", !isD20);
+    disBtn.classList.toggle("hidden", !isD20);
+  }
 
-    function updateD20Buttons() {
-      const isD20 = currentDie === "d20";
-      advBtn.classList.toggle("hidden", !isD20);
-      disBtn.classList.toggle("hidden", !isD20);
-    }
+  function renderHistory() {
+    historyList.innerHTML = "";
 
-    function addToHistory(entry) {
-      history.unshift(entry);
-      if (history.length > 5) {
-        history = history.slice(0, 5);
-      }
-
-      historyList.innerHTML = "";
-      history.forEach(item => {
-        const li = document.createElement("li");
-        li.className = "history-item";
-        li.textContent = `${item.formula} → ${item.total} (${item.breakdown})`;
-        historyList.appendChild(li);
-      });
-    }
-
-    function doRoll() {
-      const sides = allowedDice[currentDie];
-      const rolls = rollMultipleDice(sides, diceCount);
-      const total = rolls.reduce((sum, value) => sum + value, 0);
-
-      const formulaText = `${diceCount}${currentDie}`;
-
-      dieLabel.textContent = `Active die: ${currentDie}`;
-      formulaLabel.textContent = `Formula: ${formulaText}`;
-      modeLabel.textContent = "Mode: Normal";
-      resultEl.textContent = total;
-      breakdownEl.textContent = `Breakdown: ${rolls.join(" + ")}`;
-
-      updateD20Buttons();
-
-      addToHistory({
-        formula: `${formulaText} (Normal)`,
-        total,
-        breakdown: rolls.join(" + ")
-      });
-    }
-
-    function doAdvantageRoll() {
-      if (currentDie !== "d20") return;
-
-      const first = rollDie(20);
-      const second = rollDie(20);
-      const result = Math.max(first, second);
-
-      const formulaText = "1d20 adv";
-
-      dieLabel.textContent = `Active die: ${currentDie}`;
-      formulaLabel.textContent = "Formula: 1d20";
-      modeLabel.textContent = "Mode: Advantage";
-      resultEl.textContent = result;
-      breakdownEl.textContent = `Breakdown: ${first}, ${second}`;
-
-      updateD20Buttons();
-
-      addToHistory({
-        formula: formulaText,
-        total: result,
-        breakdown: `${first}, ${second}`
-      });
-    }
-
-    function doDisadvantageRoll() {
-      if (currentDie !== "d20") return;
-
-      const first = rollDie(20);
-      const second = rollDie(20);
-      const result = Math.min(first, second);
-
-      const formulaText = "1d20 dis";
-
-      dieLabel.textContent = `Active die: ${currentDie}`;
-      formulaLabel.textContent = "Formula: 1d20";
-      modeLabel.textContent = "Mode: Disadvantage";
-      resultEl.textContent = result;
-      breakdownEl.textContent = `Breakdown: ${first}, ${second}`;
-
-      updateD20Buttons();
-
-      addToHistory({
-        formula: formulaText,
-        total: result,
-        breakdown: `${first}, ${second}`
-      });
-    }
-
-    rerollBtn.addEventListener("click", doRoll);
-
-    addDieBtn.addEventListener("click", () => {
-      diceCount += 1;
-      doRoll();
+    history.forEach(item => {
+      const li = document.createElement("li");
+      li.className = "history-item";
+      li.textContent = `${item.formula} → ${item.total} (${item.breakdown})`;
+      historyList.appendChild(li);
     });
+  }
 
-    resetBtn.addEventListener("click", () => {
-      diceCount = 1;
-      doRoll();
+  function saveHistory() {
+    localStorage.setItem("diceRollHistory", JSON.stringify(history));
+  }
+
+  function addToHistory(entry) {
+    history.unshift(entry);
+
+    if (history.length > 5) {
+      history = history.slice(0, 5);
+    }
+
+    saveHistory();
+    renderHistory();
+  }
+
+  function doRoll() {
+    const sides = allowedDice[currentDie];
+    const rolls = rollMultipleDice(sides, diceCount);
+    const total = rolls.reduce((sum, value) => sum + value, 0);
+
+    const formulaText = `${diceCount}${currentDie}`;
+
+    dieLabel.textContent = `Active die: ${currentDie}`;
+    formulaLabel.textContent = `Formula: ${formulaText}`;
+    modeLabel.textContent = "Mode: Normal";
+    resultEl.textContent = total;
+    breakdownEl.textContent = `Breakdown: ${rolls.join(" + ")}`;
+
+    updateD20Buttons();
+
+    addToHistory({
+      formula: `${formulaText} (Normal)`,
+      total,
+      breakdown: rolls.join(" + ")
     });
+  }
 
-    advBtn.addEventListener("click", doAdvantageRoll);
-    disBtn.addEventListener("click", doDisadvantageRoll);
+  function doAdvantageRoll() {
+    if (currentDie !== "d20") return;
 
+    const first = rollDie(20);
+    const second = rollDie(20);
+    const result = Math.max(first, second);
+
+    dieLabel.textContent = `Active die: ${currentDie}`;
+    formulaLabel.textContent = "Formula: 1d20";
+    modeLabel.textContent = "Mode: Advantage";
+    resultEl.textContent = result;
+    breakdownEl.textContent = `Breakdown: ${first}, ${second}`;
+
+    updateD20Buttons();
+
+    addToHistory({
+      formula: "1d20 adv",
+      total: result,
+      breakdown: `${first}, ${second}`
+    });
+  }
+
+  function doDisadvantageRoll() {
+    if (currentDie !== "d20") return;
+
+    const first = rollDie(20);
+    const second = rollDie(20);
+    const result = Math.min(first, second);
+
+    dieLabel.textContent = `Active die: ${currentDie}`;
+    formulaLabel.textContent = "Formula: 1d20";
+    modeLabel.textContent = "Mode: Disadvantage";
+    resultEl.textContent = result;
+    breakdownEl.textContent = `Breakdown: ${first}, ${second}`;
+
+    updateD20Buttons();
+
+    addToHistory({
+      formula: "1d20 dis",
+      total: result,
+      breakdown: `${first}, ${second}`
+    });
+  }
+
+  rerollBtn.addEventListener("click", doRoll);
+
+  addDieBtn.addEventListener("click", () => {
+    diceCount += 1;
     doRoll();
-  </script>
+  });
+
+  resetBtn.addEventListener("click", () => {
+    diceCount = 1;
+    doRoll();
+  });
+
+  advBtn.addEventListener("click", doAdvantageRoll);
+  disBtn.addEventListener("click", doDisadvantageRoll);
+
+  updateD20Buttons();
+  renderHistory();
+  doRoll();
+</script>
 </body>
 </html>
