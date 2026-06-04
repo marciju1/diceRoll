@@ -56,6 +56,19 @@
       text-align: center;
     }
 
+    .crest-wrap {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 0.8rem;
+    }
+
+    .crest {
+      width: 68px;
+      height: 68px;
+      color: var(--gold);
+      filter: drop-shadow(0 0 10px rgba(199,154,82,0.15));
+    }
+
     .title {
       margin: 0;
       font-size: 1.6rem;
@@ -94,10 +107,61 @@
       box-shadow: 0 0 0 1px rgba(176,87,87,0.2), 0 0 22px var(--fail-glow);
     }
 
-    .die {
-      font-size: 1rem;
+    .token-badge-wrap {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 0.75rem;
+    }
+
+    .token-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.55rem 0.95rem;
+      border-radius: 999px;
+      border: 1px solid rgba(199,154,82,0.35);
+      background:
+        linear-gradient(180deg, rgba(199,154,82,0.12), rgba(0,0,0,0.18));
+      color: var(--text);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
+    }
+
+    .token-icon {
+      width: 26px;
+      height: 26px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(199,154,82,0.15);
+      border: 1px solid rgba(199,154,82,0.22);
+      color: var(--gold);
+      font-size: 0.8rem;
+      font-weight: bold;
+      letter-spacing: 0.03em;
+      flex-shrink: 0;
+    }
+
+    .token-text {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      text-align: left;
+      line-height: 1.1;
+    }
+
+    .token-label {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
       color: var(--muted);
-      margin-bottom: 0.35rem;
+    }
+
+    .token-value {
+      font-size: 1rem;
+      font-weight: bold;
+      color: #fff7ea;
+      letter-spacing: 0.04em;
     }
 
     .formula {
@@ -332,19 +396,44 @@
         flex-direction: column;
         align-items: flex-start;
       }
+
+      .token-badge {
+        width: 100%;
+        justify-content: center;
+      }
     }
   </style>
 </head>
 <body>
   <div class="app">
     <div class="header">
+      <div class="crest-wrap">
+        <svg class="crest" viewBox="0 0 64 64" aria-label="Arcane dice crest" fill="none">
+          <circle cx="32" cy="32" r="25" stroke="currentColor" stroke-width="2.2"/>
+          <circle cx="32" cy="32" r="18" stroke="currentColor" stroke-width="1.4" opacity="0.6"/>
+          <path d="M32 14 L43 22 L39 37 L25 37 L21 22 Z" stroke="currentColor" stroke-width="2" fill="rgba(199,154,82,0.08)"/>
+          <path d="M32 14 V37" stroke="currentColor" stroke-width="1.6" opacity="0.75"/>
+          <path d="M21 22 L32 29 L43 22" stroke="currentColor" stroke-width="1.6" opacity="0.75"/>
+          <path d="M18 46 Q32 54 46 46" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          <circle cx="32" cy="46" r="2.4" fill="currentColor"/>
+        </svg>
+      </div>
       <h1 class="title">NFC Dice Roller</h1>
-      <div class="subtitle">Tap a die token, then roll your fate.</div>
+      <div class="subtitle">Arcane token interface for your tapped die.</div>
     </div>
 
     <div class="main">
       <div class="result-card" id="resultCard">
-        <div class="die" id="dieLabel">Loading...</div>
+        <div class="token-badge-wrap">
+          <div class="token-badge">
+            <div class="token-icon" id="tokenIcon">D</div>
+            <div class="token-text">
+              <div class="token-label">Active Token</div>
+              <div class="token-value" id="dieLabel">Loading...</div>
+            </div>
+          </div>
+        </div>
+
         <div class="formula" id="formulaLabel">-</div>
         <div class="mode" id="modeLabel"></div>
         <div class="result" id="result">-</div>
@@ -363,7 +452,7 @@
           <button id="clearHistoryBtn" class="danger">Clear History</button>
         </div>
 
-        <div class="button-row" id="d20Row">
+        <div class="button-row">
           <button id="advBtn" class="special hidden">Advantage</button>
           <button id="disBtn" class="special hidden">Disadvantage</button>
         </div>
@@ -391,6 +480,7 @@
     const dieParam = params.get("die");
 
     const dieLabel = document.getElementById("dieLabel");
+    const tokenIcon = document.getElementById("tokenIcon");
     const formulaLabel = document.getElementById("formulaLabel");
     const modeLabel = document.getElementById("modeLabel");
     const resultEl = document.getElementById("result");
@@ -427,6 +517,11 @@
       const isD20 = currentDie === "d20";
       advBtn.classList.toggle("hidden", !isD20);
       disBtn.classList.toggle("hidden", !isD20);
+    }
+
+    function updateTokenBranding() {
+      dieLabel.textContent = currentDie.toUpperCase();
+      tokenIcon.textContent = currentDie.replace("d", "").toUpperCase();
     }
 
     function clearSpecialStyles() {
@@ -548,7 +643,7 @@
         if (rolls[0] === 1) special = "nat1";
       }
 
-      dieLabel.textContent = `Active die: ${currentDie}`;
+      updateTokenBranding();
       formulaLabel.textContent = `Formula: ${formulaText}`;
       modeLabel.textContent = "Mode: Normal";
       resultEl.textContent = total;
@@ -577,7 +672,7 @@
       if (result === 20) special = "nat20";
       if (result === 1) special = "nat1";
 
-      dieLabel.textContent = `Active die: ${currentDie}`;
+      updateTokenBranding();
       formulaLabel.textContent = "Formula: 1d20";
       modeLabel.textContent = "Mode: Advantage";
       resultEl.textContent = result;
@@ -606,7 +701,7 @@
       if (result === 20) special = "nat20";
       if (result === 1) special = "nat1";
 
-      dieLabel.textContent = `Active die: ${currentDie}`;
+      updateTokenBranding();
       formulaLabel.textContent = "Formula: 1d20";
       modeLabel.textContent = "Mode: Disadvantage";
       resultEl.textContent = result;
@@ -640,6 +735,7 @@
     disBtn.addEventListener("click", doDisadvantageRoll);
     clearHistoryBtn.addEventListener("click", clearHistory);
 
+    updateTokenBranding();
     updateD20Buttons();
     renderHistory();
     doRoll();
